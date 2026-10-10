@@ -203,7 +203,8 @@ func (s *Server) logPlaintextMismatch(log *slog.Logger) {
 //
 // Some of what a device reports is only fetched once per connection — the voice satellite's
 // available wake words among it — and there is no message for revising it. When that changes, the
-// connection is the only lever: Home Assistant reconnects on its own, within seconds.
+// connection is the only lever: Home Assistant reconnects on its own, within seconds. A connection in
+// the middle of a message closes once that message is answered.
 func (s *Server) Reconnect() { s.closeConns() }
 
 func (s *Server) closeConns() {
@@ -215,7 +216,7 @@ func (s *Server) closeConns() {
 	s.mu.Unlock()
 
 	for _, c := range conns {
-		_ = c.Close()
+		c.leave()
 	}
 }
 
