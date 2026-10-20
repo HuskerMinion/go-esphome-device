@@ -95,6 +95,8 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 // to remember an extra call.
 type serverBinder interface{ bindServer(*Server) }
 
+type connCloser interface{ connClosed(*Conn) }
+
 func (s *Server) Serve(ctx context.Context, ln net.Listener) error {
 	log := s.logger()
 
@@ -151,7 +153,7 @@ func (b bounded) Write(p []byte) (int, error) {
 	if err != nil {
 		// A half-written frame desynchronises the transport's nonce, so the connection cannot be
 		// reused. Closing it also stops every later write inheriting a fresh deadline.
-		_ = b.Conn.Close()
+		_ = b.Close()
 	}
 	return n, err
 }
@@ -176,6 +178,11 @@ func (s *Server) serveConn(ctx context.Context, nc net.Conn) {
 
 	s.track(c, true)
 	defer s.track(c, false)
+	defer func() {
+		if cc, ok := s.Handler.(connCloser); ok {
+			cc.connClosed(c)
+		}
+	}()
 	defer func() { _ = c.Close() }()
 
 	if err := c.serve(ctx); err != nil && !errors.Is(err, context.Canceled) {

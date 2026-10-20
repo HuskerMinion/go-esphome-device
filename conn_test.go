@@ -62,13 +62,24 @@ func startServer(t *testing.T, h Handler) (*Server, *testPeer) {
 		<-done
 	})
 
-	return srv, &testPeer{t: t, transport: wire.NewPlaintext(nc), conn: nc}
+	return srv, &testPeer{t: t, transport: wire.NewPlaintext(nc), conn: nc, addr: ln.Addr().String()}
 }
 
 type testPeer struct {
 	t         *testing.T
 	transport wire.Transport
 	conn      net.Conn
+	addr      string
+}
+
+func (p *testPeer) another() *testPeer {
+	p.t.Helper()
+	nc, err := net.Dial("tcp", p.addr)
+	if err != nil {
+		p.t.Fatalf("dial: %v", err)
+	}
+	p.t.Cleanup(func() { _ = nc.Close() })
+	return &testPeer{t: p.t, transport: wire.NewPlaintext(nc), conn: nc, addr: p.addr}
 }
 
 func (p *testPeer) send(msg proto.Message) {
