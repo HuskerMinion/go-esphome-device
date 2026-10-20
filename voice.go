@@ -169,11 +169,17 @@ func (v *VoiceSatellite) StartTurn(wakeWordPhrase string, settings *api.VoiceAss
 	if settings == nil {
 		settings = &api.VoiceAssistantAudioSettings{VolumeMultiplier: 1}
 	}
-	return conn.Send(&api.VoiceAssistantRequest{
+	err := conn.Send(&api.VoiceAssistantRequest{
 		Start:          true,
 		WakeWordPhrase: wakeWordPhrase,
 		AudioSettings:  settings,
 	})
+	if err != nil {
+		v.mu.Lock()
+		v.turnOpen = false
+		v.mu.Unlock()
+	}
+	return err
 }
 
 // StopTurn ends the current turn early.
