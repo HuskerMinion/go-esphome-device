@@ -95,7 +95,7 @@ func (s *Server) ListenAndServe(ctx context.Context) error {
 // to remember an extra call.
 type serverBinder interface{ bindServer(*Server) }
 
-type connCloser interface{ connClosed(*Conn) }
+type ConnCloser interface{ ConnClosed(*Conn) }
 
 func (s *Server) Serve(ctx context.Context, ln net.Listener) error {
 	log := s.logger()
@@ -179,8 +179,8 @@ func (s *Server) serveConn(ctx context.Context, nc net.Conn) {
 	s.track(c, true)
 	defer s.track(c, false)
 	defer func() {
-		if cc, ok := s.Handler.(connCloser); ok {
-			cc.connClosed(c)
+		if cc, ok := s.Handler.(ConnCloser); ok {
+			cc.ConnClosed(c)
 		}
 	}()
 	defer func() { _ = c.Close() }()

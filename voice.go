@@ -222,7 +222,7 @@ func (v *VoiceSatellite) AnnounceFinished(success bool) error {
 	return conn.Send(&api.VoiceAssistantAnnounceFinished{Success: success})
 }
 
-func (v *VoiceSatellite) connClosed(c *Conn) {
+func (v *VoiceSatellite) ConnClosed(c *Conn) {
 	v.mu.Lock()
 	if v.conn != c {
 		v.mu.Unlock()

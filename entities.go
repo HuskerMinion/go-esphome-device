@@ -271,10 +271,10 @@ func (c *chain) bindServer(s *Server) {
 	}
 }
 
-func (c *chain) connClosed(conn *Conn) {
+func (c *chain) ConnClosed(conn *Conn) {
 	for _, h := range c.handlers {
-		if cc, ok := h.(connCloser); ok {
-			cc.connClosed(conn)
+		if cc, ok := h.(ConnCloser); ok {
+			cc.ConnClosed(conn)
 		}
 	}
 }
