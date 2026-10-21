@@ -48,6 +48,29 @@ type Call struct {
 	args map[string]*api.ExecuteServiceArgument
 }
 
+func NewCall(args map[string]any) (Call, error) {
+	c := Call{args: make(map[string]*api.ExecuteServiceArgument, len(args))}
+	for name, v := range args {
+		switch v := v.(type) {
+		case string:
+			c.args[name] = &api.ExecuteServiceArgument{String_: v}
+		case bool:
+			c.args[name] = &api.ExecuteServiceArgument{Bool_: v}
+		case int:
+			c.args[name] = &api.ExecuteServiceArgument{Int_: int32(v)}
+		case float64:
+			if v == float64(int32(v)) {
+				c.args[name] = &api.ExecuteServiceArgument{Int_: int32(v), Float_: float32(v)}
+			} else {
+				c.args[name] = &api.ExecuteServiceArgument{Float_: float32(v)}
+			}
+		default:
+			return Call{}, fmt.Errorf("argument %q: %T is not a string, number or bool", name, v)
+		}
+	}
+	return c, nil
+}
+
 func (c Call) String(name string) string {
 	if a := c.args[name]; a != nil {
 		return a.GetString_()
