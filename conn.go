@@ -294,5 +294,6 @@ func (c *Conn) deviceInfo() *api.DeviceInfoResponse {
 		ApiEncryptionProvisionable: c.hooks.provisionable,
 		VoiceAssistantFeatureFlags: uint32(c.info.VoiceFeatures),
 		BluetoothProxyFeatureFlags: uint32(c.info.BluetoothFeatures),
+		WebserverPort:              uint32(c.info.WebserverPort),
 	}
 }
